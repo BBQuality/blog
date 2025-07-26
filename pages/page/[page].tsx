@@ -1,6 +1,9 @@
 import { GetStaticPaths, GetStaticProps } from 'next'
 import { getAllPosts } from '@/lib/posts'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
+import { useState } from 'react'
+import SearchInput from '@/components/SearchInput'
 
 const POSTS_PER_PAGE = 3
 
@@ -13,36 +16,49 @@ export default function PaginatedBlogPage({
   currentPage: number
   totalPages: number
 }) {
+  const [searchQuery, setSearchQuery] = useState('')
+  const router = useRouter()
+
+  const filteredPosts = posts.filter((post) =>
+    post.meta.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    post.meta.description.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   return (
     <main className="prose p-8 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Блог</h1>
+      <SearchInput onSearch={setSearchQuery} />
 
       <ul>
-        {posts.map((post) => (
-          <li key={post.slug}>
-            <h2 className="text-xl font-semibold">
-              <Link href={`/blog/${post.slug}`} className="text-blue-600 hover:underline">
-                {post.meta.title}
-              </Link>
+        {filteredPosts.map((post) => (
+          <li
+            key={post.slug}
+            onClick={() => router.push(`/blog/${post.slug}`)}
+            className="cursor-pointer"
+          >
+            <h2 className="text-xl font-semibold text-blue-600 hover:underline">
+              {post.meta.title}
             </h2>
             <p className="text-gray-600">{post.meta.description}</p>
           </li>
         ))}
       </ul>
 
-      <nav className="flex justify-between mt-8">
-        {currentPage > 1 ? (
-          <Link href={`/page/${currentPage - 1}`} className="hover:underline">
-            ← Назад
-          </Link>
-        ) : <span />}
+      {searchQuery === '' && (
+        <nav className="flex justify-between mt-8">
+          {currentPage > 1 ? (
+            <Link href={`/page/${currentPage - 1}`} className="hover:underline">
+              ← Назад
+            </Link>
+          ) : <span />}
 
-        {currentPage < totalPages ? (
-          <Link href={`/page/${currentPage + 1}`} className="hover:underline">
-            Вперед →
-          </Link>
-        ) : <span />}
-      </nav>
+          {currentPage < totalPages ? (
+            <Link href={`/page/${currentPage + 1}`} className="hover:underline">
+              Вперед →
+            </Link>
+          ) : <span />}
+        </nav>
+      )}
     </main>
   )
 }
@@ -74,5 +90,3 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     },
   }
 }
-
-

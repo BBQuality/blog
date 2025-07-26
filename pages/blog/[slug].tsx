@@ -2,10 +2,13 @@ import { GetStaticPaths, GetStaticProps } from 'next'
 import { getAllPosts, getPostBySlug } from '@/lib/posts'
 import { remark } from 'remark'
 import html from 'remark-html'
+import Link from 'next/link'
 
 export default function BlogPost({ post }: { post: any }) {
   return (
-    <main className="prose p-8">
+    <main className="prose p-8 max-w-3xl mx-auto">
+      <Link href="/" className="text-blue-600 hover:underline mb-4 inline-block">← Назад до блогу</Link>
+
       <h1>{post.meta.title}</h1>
       <p className="text-gray-500 text-sm">{post.meta.description}</p>
       <p className="text-gray-500 text-sm">{post.meta.date}</p>
