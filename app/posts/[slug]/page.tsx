@@ -1,32 +1,42 @@
-import { getPostData, getSortedPostsData } from '../../../lib/posts'
+import { getPostData, getSortedPostsData } from "../../../lib/posts";
+import PostLayout from "../../../components/PostLayout";
+import BackButton from "../../../components/BackButton";
+import RelatedPosts from "../../../components/RelatedPosts";
 
 interface Props {
-  params: { slug: string }
+  params: { slug: string };
 }
 
 export async function generateStaticParams() {
-  const posts = getSortedPostsData()
-  return posts.map(post => ({
+  const posts = getSortedPostsData();
+  return posts.map((post) => ({
     slug: post.slug,
-  }))
+  }));
 }
 
 export default async function PostPage({ params }: Props) {
-  const post = await getPostData(params.slug)
+  const post = await getPostData(params.slug);
+  const allPosts = getSortedPostsData();
 
   if (!post) {
-    return <div>Пост не знайдено</div>
+    return <div className="p-6 text-center">Пост не знайдено</div>;
   }
 
-  return (
-    <article className="prose mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-2">{post.title}</h1>
-      <p className="text-sm text-gray-500 mb-6">{post.date}</p>
-      <div
-        className="prose prose-lg"
-        dangerouslySetInnerHTML={{ __html: post.contentHtml }}
-      />
-    </article>
-  )
-}
+  // Останні 3 пости, виключаючи поточний
+  const related = allPosts
+    .filter((p) => p.slug !== params.slug)
+    .slice(0, 3);
 
+  return (
+    <div className="px-4 py-8">
+      <BackButton />
+      <PostLayout title={post.title} date={post.date}>
+        <div
+          className="prose dark:prose-invert lg:prose-xl"
+          dangerouslySetInnerHTML={{ __html: post.contentHtml }}
+        />
+      </PostLayout>
+      <RelatedPosts posts={related} />
+    </div>
+  );
+}
